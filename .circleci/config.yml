@@ -10,7 +10,7 @@ jobs:
 
       # Install Docker CLI and Login to DockerHub
       - setup_remote_docker:
-          version: 19.03.12
+          version: 20.10.16
       - run:
           name: Install Docker Compose
           command: apk add --no-cache docker-compose
