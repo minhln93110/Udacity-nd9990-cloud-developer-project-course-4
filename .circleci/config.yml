@@ -1,55 +1,32 @@
 version: 2.1
-
+orbs:
+    node: circleci/node@4.1.0
+    aws-cli: circleci/aws-cli@1.3.1
+    eb: circleci/aws-elastic-beanstalk@1.0.2
 jobs:
-  build_and_push:
-    docker:
-      - image: docker:19.03.12
-    working_directory: ~/project
-    steps:
-      - checkout
-
-      # Install Docker CLI and Login to DockerHub
-      - setup_remote_docker:
-          version: 20.10.16
-      - run:
-          name: Install Docker Compose
-          command: apk add --no-cache docker-compose
-
-      # Build Docker Images
-      - run:
-          name: Build API Feed Image
-          command: docker build -t udagram-api-feed ./udagram-api-feed
-      - run:
-          name: Build API User Image
-          command: docker build -t udagram-api-user ./udagram-api-user
-      - run:
-          name: Build Frontend Image
-          command: docker build -t udagram-frontend ./udagram-frontend
-      - run:
-          name: Build Reverse Proxy Image
-          command: docker build -t udagram-reverseproxy ./udagram-reverseproxy
-
-      # Tag Docker Images
-      - run:
-          name: Tag Images
-          command: |
-            docker tag udagram-api-feed $DOCKER_USERNAME/udagram-api-feed:v1
-            docker tag udagram-api-user $DOCKER_USERNAME/udagram-api-user:v1
-            docker tag udagram-frontend $DOCKER_USERNAME/udagram-frontend:v1
-            docker tag udagram-reverseproxy $DOCKER_USERNAME/udagram-reverseproxy:v1
-
-      # Push Docker Images to DockerHub
-      - run:
-          name: Push Images
-          command: |
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker push $DOCKER_USERNAME/udagram-api-feed:v1
-            docker push $DOCKER_USERNAME/udagram-api-user:v1
-            docker push $DOCKER_USERNAME/udagram-frontend:v1
-            docker push $DOCKER_USERNAME/udagram-reverseproxy:v1
-
-workflows:
-  version: 2
-  build_and_push_workflow:
-    jobs:
-      - build_and_push
+    build:
+        docker:
+            - image: "cimg/base:stable"
+        steps:
+            - node/install
+            - checkout 
+            - aws-cli/setup
+            - eb/setup
+            - run:
+                name: Install Front-End Dependencies
+                command: npm run frontend:install
+            - run:
+                name: Front-End Build
+                command: npm run frontend:build
+            - run:
+                name: Install Back-End Dependencies
+                command: npm run backend:install
+            - run:
+                name: Back-End Build
+                command: npm run backend:build
+            - run:
+                name: Deploy Backend Application
+                command: npm run backend:deploy
+            - run:
+                name: Deploy Frontend Application
+                command: npm run frontend:deploy
