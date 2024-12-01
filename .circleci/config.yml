@@ -1,98 +1,64 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5.0.1
   aws-cli: circleci/aws-cli@1.3.1
+  docker: circleci/docker@2.0
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     docker:
-      - image: 'cimg/base:stable' # Base image with Node.js
+      - image: cimg/base:stable
     steps:
-      - checkout # Clone the repository
-      - node/install # Install Node.js
-      - aws-cli/setup # Set up AWS CLI
+      - checkout
+      - aws-cli/setup
+      - setup_remote_docker
 
-      # Install frontend dependencies
+      # Build and push API feed service
       - run:
-          name: Install Frontend Dependencies
+          name: Build API Feed Service
           command: |
-            cd udagram-frontend
-            npm install
+            docker build -t your-dockerhub-username/udagram-api-feed:latest ./udagram-api-feed
+      - run:
+          name: Push API Feed Service
+          command: |
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker push your-dockerhub-username/udagram-api-feed:latest
 
-      # Build frontend
+      # Build and push API user service
       - run:
-          name: Build Frontend
+          name: Build API User Service
           command: |
-            cd udagram-frontend
-            npm run build
+            docker build -t your-dockerhub-username/udagram-api-user:latest ./udagram-api-user
+      - run:
+          name: Push API User Service
+          command: |
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker push your-dockerhub-username/udagram-api-user:latest
 
-      # Deploy frontend to S3
+      # Build and push frontend service
       - run:
-          name: Deploy Frontend to S3
+          name: Build Frontend Service
           command: |
-            cd udagram-frontend
-            aws s3 sync ./dist s3://your-frontend-bucket-name --delete
+            docker build -t your-dockerhub-username/udagram-frontend:latest ./udagram-frontend
+      - run:
+          name: Push Frontend Service
+          command: |
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker push your-dockerhub-username/udagram-frontend:latest
 
-      # Install backend dependencies for `user` service
+      # Build and push reverse proxy service
       - run:
-          name: Install Backend User Dependencies
+          name: Build Reverse Proxy Service
           command: |
-            cd udagram-api-user
-            npm install
-
-      # Build backend user service
+            docker build -t your-dockerhub-username/udagram-reverseproxy:latest ./udagram-reverseproxy
       - run:
-          name: Build Backend User Service
+          name: Push Reverse Proxy Service
           command: |
-            cd udagram-api-user
-            npm run build
-
-      # Deploy backend user service to Elastic Beanstalk
-      - run:
-          name: Deploy Backend User to Elastic Beanstalk
-          command: |
-            cd udagram-api-user
-            zip -r user-app.zip . -x node_modules/\* -x .git/\*
-            aws elasticbeanstalk create-application-version --application-name udagram-api-user \
-                --version-label user-v1 \
-                --source-bundle S3Bucket="your-elastic-beanstalk-bucket",S3Key="user-app.zip"
-            aws elasticbeanstalk update-environment --environment-name user-env \
-                --version-label user-v1
-
-      # Install backend dependencies for `feed` service
-      - run:
-          name: Install Backend Feed Dependencies
-          command: |
-            cd udagram-api-feed
-            npm install
-
-      # Build backend feed service
-      - run:
-          name: Build Backend Feed Service
-          command: |
-            cd udagram-api-feed
-            npm run build
-
-      # Deploy backend feed service to Elastic Beanstalk
-      - run:
-          name: Deploy Backend Feed to Elastic Beanstalk
-          command: |
-            cd udagram-api-feed
-            zip -r feed-app.zip . -x node_modules/\* -x .git/\*
-            aws elasticbeanstalk create-application-version --application-name udagram-api-feed \
-                --version-label feed-v1 \
-                --source-bundle S3Bucket="your-elastic-beanstalk-bucket",S3Key="feed-app.zip"
-            aws elasticbeanstalk update-environment --environment-name feed-env \
-                --version-label feed-v1
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker push your-dockerhub-username/udagram-reverseproxy:latest
 
 workflows:
   version: 2
-  build-and-deploy:
+  build-and-push-workflow:
     jobs:
-      - build-and-deploy:
-          context: aws
-          filters:
-            branches:
-              only:
-                - main
+      - build-and-push
