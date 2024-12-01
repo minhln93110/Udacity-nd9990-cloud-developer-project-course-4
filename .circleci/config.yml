@@ -1,64 +1,23 @@
 version: 2.1
-orbs:
-  node: circleci/node@4.1.0
-  aws-cli: circleci/aws-cli@1.3.1
-  eb: circleci/aws-elastic-beanstalk@1.0.2
 
 jobs:
   build_and_push:
     docker:
-      - image: cimg/node:18.16.0 # Use a specific Node.js image for compatibility
+      - image: circleci/docker:latest
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 20.10.17 # Explicitly set a compatible Docker version
-      - aws-cli/setup:
-          version: "2"
+      - setup_remote_docker
       - run:
-          name: Install Front-End Dependencies
+          name: Install Docker Compose
           command: |
-            cd udagram-frontend
-            npm install
+            apk add --no-cache py3-pip
+            pip3 install docker-compose
       - run:
-          name: Front-End Build
-          command: |
-            cd udagram-frontend
-            npm run build
+          name: Build and Start Containers
+          command: docker-compose up --build -d
       - run:
-          name: Install Back-End Dependencies (Feed Service)
-          command: |
-            cd udagram-api-feed
-            npm install
+          name: Run Tests
+          command: docker-compose run <test-service> npm test
       - run:
-          name: Back-End Build (Feed Service)
-          command: |
-            cd udagram-api-feed
-            npm run build
-      - run:
-          name: Install Back-End Dependencies (User Service)
-          command: |
-            cd udagram-api-user
-            npm install
-      - run:
-          name: Back-End Build (User Service)
-          command: |
-            cd udagram-api-user
-            npm run build
-      - run:
-          name: Build and Push Docker Images
-          command: |
-            docker build -t $DOCKER_USERNAME/udagram-api-feed:latest ./udagram-api-feed
-            docker build -t $DOCKER_USERNAME/udagram-api-user:latest ./udagram-api-user
-            docker build -t $DOCKER_USERNAME/udagram-frontend:latest ./udagram-frontend
-            docker build -t $DOCKER_USERNAME/udagram-reverseproxy:latest ./udagram-reverseproxy
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker push $DOCKER_USERNAME/udagram-api-feed:latest
-            docker push $DOCKER_USERNAME/udagram-api-user:latest
-            docker push $DOCKER_USERNAME/udagram-frontend:latest
-            docker push $DOCKER_USERNAME/udagram-reverseproxy:latest
-
-workflows:
-  version: 2
-  build_and_push_workflow:
-    jobs:
-      - build_and_push
+          name: Stop Containers
+          command: docker-compose down
