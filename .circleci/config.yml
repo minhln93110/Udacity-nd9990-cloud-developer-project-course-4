@@ -17,45 +17,45 @@ jobs:
       - run:
           name: Build API Feed Service
           command: |
-            docker build -t your-dockerhub-username/udagram-api-feed:latest ./udagram-api-feed
+            docker build -t minhln9/udagram-api-feed:latest ./udagram-api-feed
       - run:
           name: Push API Feed Service
           command: |
             docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-            docker push your-dockerhub-username/udagram-api-feed:latest
+            docker push minhln9/udagram-api-feed:latest
 
       # Build and push API user service
       - run:
           name: Build API User Service
           command: |
-            docker build -t your-dockerhub-username/udagram-api-user:latest ./udagram-api-user
+            docker build -t minhln9/udagram-api-user:latest ./udagram-api-user
       - run:
           name: Push API User Service
           command: |
             docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-            docker push your-dockerhub-username/udagram-api-user:latest
+            docker push minhln9/udagram-api-user:latest
 
       # Build and push frontend service
       - run:
           name: Build Frontend Service
           command: |
-            docker build -t your-dockerhub-username/udagram-frontend:latest ./udagram-frontend
+            docker build -t minhln9/udagram-frontend:latest ./udagram-frontend
       - run:
           name: Push Frontend Service
           command: |
             docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-            docker push your-dockerhub-username/udagram-frontend:latest
+            docker push minhln9/udagram-frontend:latest
 
       # Build and push reverse proxy service
       - run:
           name: Build Reverse Proxy Service
           command: |
-            docker build -t your-dockerhub-username/udagram-reverseproxy:latest ./udagram-reverseproxy
+            docker build -t minhln9/udagram-reverseproxy:latest ./udagram-reverseproxy
       - run:
           name: Push Reverse Proxy Service
           command: |
             docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-            docker push your-dockerhub-username/udagram-reverseproxy:latest
+            docker push minhln9/udagram-reverseproxy:latest
 
 workflows:
   version: 2
