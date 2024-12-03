@@ -1,61 +1,40 @@
 version: '3.8'
 services:
-  api-feed:
-    image: udagram-api-feed
-    container_name: api-feed
-    ports:
-      - "8081:8080"
-    environment:
-      - POSTGRES_HOST=udagram-db-2.co3uzsllrazw.us-east-1.rds.amazonaws.com
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=mih54in2025GO!
-      - POSTGRES_DB=postgres
-      - AWS_BUCKET=arn:aws:s3:::udagram-images-username
-      - AWS_REGION=us-east-1
-      - AWS_PROFILE=default
-      - JWT_SECRET=testing
-      - URL=http://localhost:8100
-    networks:
-      - udagram-network
-
-  api-user:
-    image: udagram-api-user
-    container_name: api-user
-    ports:
-      - "8082:8080"
-    environment:
-      - POSTGRES_HOST=udagram-db-2.co3uzsllrazw.us-east-1.rds.amazonaws.com
-      - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=mih54in2025GO!
-      - POSTGRES_DB=postgres
-      - AWS_BUCKET=arn:aws:s3:::udagram-images-username
-      - AWS_REGION=us-east-1
-      - AWS_PROFILE=default
-      - JWT_SECRET=testing
-      - URL=http://localhost:8100
-    networks:
-      - udagram-network
-
-  frontend:
-    image: udagram-frontend
-    container_name: frontend
-    ports:
-      - "8100:80"
-    networks:
-      - udagram-network
-
   reverseproxy:
-    image: udagram-reverseproxy
-    container_name: reverseproxy
+    image: minhln9/udagram-reverseproxy
     ports:
       - "8080:8080"
+    restart: always
     depends_on:
       - api-feed
       - api-user
-      - frontend
-    networks:
-      - udagram-network
-
-networks:
-  udagram-network:
-    driver: bridge
+  api-feed:
+    image: minhln9/udagram-api-feed
+    volumes:
+      - $HOME/.aws:/root/.aws
+    environment:
+      - POSTGRES_HOST=udagram-db-2.co3uzsllrazw.us-east-1.rds.amazonaws.com
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=mih54in2025GO!
+      - POSTGRES_DB=postgres
+      - AWS_BUCKET=arn:aws:s3:::udagram-images-username
+      - AWS_REGION=us-east-1
+      - AWS_PROFILE=default
+      - JWT_SECRET=testing
+      - URL=http://localhost:8100
+  api-user:
+    image: minhln9/udagram-api-user
+    environment:
+      - POSTGRES_HOST=udagram-db-2.co3uzsllrazw.us-east-1.rds.amazonaws.com
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=mih54in2025GO!
+      - POSTGRES_DB=postgres
+      - AWS_BUCKET=arn:aws:s3:::udagram-images-username
+      - AWS_REGION=us-east-1
+      - AWS_PROFILE=default
+      - JWT_SECRET=testing
+      - URL=http://localhost:8100
+  frontend:
+    image: minhln9/udagram-frontend
+    ports:
+      - "8100:80"

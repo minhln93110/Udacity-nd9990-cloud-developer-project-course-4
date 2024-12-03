@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: reverseproxy
+  name: reverseproxy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      service: reverseproxy  # This must match the labels in the template
+  template:
+    metadata:
+      labels:
+        service: reverseproxy
+    spec:
+      containers:
+      - image: minhln9/udagram-reverseproxy:latest
+        name: reverseproxy
+        imagePullPolicy: Always          
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "1024Mi"
+            cpu: "500m"       
+        ports:
+        - containerPort: 8080
+      restartPolicy: Always
