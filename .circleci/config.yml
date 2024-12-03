@@ -1,60 +1,41 @@
 version: 2.1
 
-orbs:
-  aws-cli: circleci/aws-cli@1.3.1
-  docker: circleci/docker@2.0
+executors:
+  docker-executor:
+    docker:
+      - image: docker:latest
+    working_directory: ~/repo
 
 jobs:
   build-and-push:
-    docker:
-      - image: cimg/base:stable
+    executor: docker-executor
     steps:
       - checkout
-      - aws-cli/setup
       - setup_remote_docker
-
-      # Build and push API feed service
       - run:
-          name: Build API Feed Service
+          name: Build Docker Images
           command: |
-            docker build -t minhln9/udagram-api-feed:latest ./udagram-api-feed
+            docker-compose -f docker-compose-build.yaml build --parallel
       - run:
-          name: Push API Feed Service
+          name: Tag and Push API Feed Image
           command: |
+            docker tag minhln9/udagram-api-feed:latest minhln9/udagram-api-feed:latest
             docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
             docker push minhln9/udagram-api-feed:latest
-
-      # Build and push API user service
       - run:
-          name: Build API User Service
+          name: Tag and Push API User Image
           command: |
-            docker build -t minhln9/udagram-api-user:latest ./udagram-api-user
-      - run:
-          name: Push API User Service
-          command: |
-            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker tag minhln9/udagram-api-user:latest minhln9/udagram-api-user:latest
             docker push minhln9/udagram-api-user:latest
-
-      # Build and push frontend service
       - run:
-          name: Build Frontend Service
+          name: Tag and Push Frontend Image
           command: |
-            docker build -t minhln9/udagram-frontend:latest ./udagram-frontend
-      - run:
-          name: Push Frontend Service
-          command: |
-            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker tag minhln9/udagram-frontend:latest minhln9/udagram-frontend:latest
             docker push minhln9/udagram-frontend:latest
-
-      # Build and push reverse proxy service
       - run:
-          name: Build Reverse Proxy Service
+          name: Tag and Push Reverse Proxy Image
           command: |
-            docker build -t minhln9/udagram-reverseproxy:latest ./udagram-reverseproxy
-      - run:
-          name: Push Reverse Proxy Service
-          command: |
-            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker tag minhln9/udagram-reverseproxy:latest minhln9/udagram-reverseproxy:latest
             docker push minhln9/udagram-reverseproxy:latest
 
 workflows:
