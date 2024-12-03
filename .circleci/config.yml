@@ -68,7 +68,7 @@ version: 2.1
 executors:
   docker-executor:
     docker:
-      - image: circleci/docker:20.10.8
+      - image: docker:latest
     working_directory: ~/repo
 
 jobs:
