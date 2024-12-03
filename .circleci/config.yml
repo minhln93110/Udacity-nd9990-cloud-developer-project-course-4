@@ -85,23 +85,23 @@ jobs:
           name: Tag and Push API Feed Image
           command: |
             docker tag minhln9/udagram-api-feed:latest $DOCKER_USERNAME/udagram-api-feed:latest
-            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-            docker push <DOCKER_USERNAME>/udagram-api-feed:latest
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker push minhln9/udagram-api-feed:latest
       - run:
           name: Tag and Push API User Image
           command: |
             docker tag minhln9/udagram-api-user:latest $DOCKER_USERNAME/udagram-api-user:latest
-            docker push <DOCKER_USERNAME>/udagram-api-user:latest
+            docker push minhln9/udagram-api-user:latest
       - run:
           name: Tag and Push Frontend Image
           command: |
             docker tag minhln9/udagram-frontend:latest $DOCKER_USERNAME/udagram-frontend:latest
-            docker push <DOCKER_USERNAME>/udagram-frontend:latest
+            docker push minhln9/udagram-frontend:latest
       - run:
           name: Tag and Push Reverse Proxy Image
           command: |
             docker tag minhln9/udagram-reverseproxy:latest $DOCKER_USERNAME/udagram-reverseproxy:latest
-            docker push <DOCKER_USERNAME>/udagram-reverseproxy:latest
+            docker push minhln9/udagram-reverseproxy:latest
 
 workflows:
   version: 2
